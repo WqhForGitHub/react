@@ -68,7 +68,7 @@ export default 前缀是一种 JavaScript 标准语法（非 React 的特性）�
 
 ## 第三步：添加标签
 
-这个组件返回一个带有 src 和 alt 属性的 <img /> 标签。<img /> 写得像 HTML，但实际上是 JavaScript。这种语法被称为 JSX，它允许你在 JavaScript 中嵌入标签。
+这个组件返回一个带有 src 和 alt 属性的 `<img />` 标签。`<img />` 写得像 HTML，但实际上是 JavaScript。这种语法被称为 JSX，它允许你在 JavaScript 中嵌入标签。
 
 返回语句可以全写在一行上，如下面组件中所示：
 
