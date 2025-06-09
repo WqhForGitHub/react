@@ -184,3 +184,164 @@ function Avatar(props) {
 >​	let size = props.size;
 >
 >}
+
+<br>
+
+# 给 prop 指定一个默认值
+
+如果你想在没有指定值的情况下给 prop 一个默认值，你可以通过在参数后面写 `=` 和默认值来进行解构：
+
+```jsx
+function Avatar({ person, size = 100 }) {
+    
+}
+```
+
+现在，如果 `<Avatar person={...} />` 渲染时没有 `size` props，`size` 将被赋值为 `100`。
+
+默认值仅在缺少 `size` prop 或 `size={undefined}` 时生效。但是如果你传递了 `size={null}` 或 `size={0}`，默认值将不被使用。
+
+<br>
+
+# 使用 JSX 展开语法传递 props
+
+有时候，传递 props 会变得非常重复：
+
+```jsx
+function Profile({ person, size, isSeqia, thickBorder }) {
+    return (
+        <div className="card">
+            <Avatar
+                person={person}
+                size={size}
+                isSepia={isSepia}
+                thickBorder={thickBorder}
+            />
+        </div>
+    )
+}
+```
+
+重复代码没有错（它可以更清晰）。但有时候你可能会重视简洁。一些组件将它们所有的 props 转发子组件，正如 `Profile` 转给 `Avatar` 那样。因为这些组件不直接使用他们本身的任何 props，所以使用更简洁的展开语法是有意义的：
+
+```jsx
+function Profile(props) {
+    return (
+        <div className="card">
+            <Avatar {...props} />
+        </div>
+    )
+}
+```
+
+这会将 `Profile` 的所有 props 转发到 `Avatar`，而不列出每个名字。
+
+请克制地使用展开语法。如果你在所有其他组件中都使用它，那就有问题了。通常，它表示你应该拆分组件，并将子组件作为 JSX 传递。接下来会详细介绍。
+
+<br>
+
+# 将 JSX 作为子组件传递
+
+嵌套浏览器内置标签是很常见的：
+
+```jsx
+<div>
+    <img />
+</div>
+```
+
+有时你会希望以相同的方式嵌套自己的组件：
+
+```jsx
+<Card>
+    <Avatar />
+</Card>
+```
+
+当你将内容嵌套在 JSX 标签中时，父组件将在名为 `children` 的 prop 中接受到该内容。例如，下面的 `Card` 组件将接收一个被设为 `<Avatar />` 的 `children` prop 并将其包裹在 div 中渲染：
+
+App.js
+
+```jsx
+import Avatar from "./Avatar.js";
+
+function Card({ children }) {
+    return (
+        <div className="card">
+            {children}
+        </div>
+    )
+}
+
+export default function Profile() {
+    return (
+        <Card>
+            <Avatar
+                size={100}
+                person={{
+                    name: "Katsuko Saruhashi",
+                    imageId: "Yfe0qp2"
+                }}
+            />
+        </Card>
+    )
+}
+```
+
+Avatar.js
+
+```jsx
+import { getImageUrl } from "./utils.js";
+
+export default function Avatar({ person, size }) {
+    return (
+        <img
+            className="avatar"
+            src={getImageUrl(person)}
+            alt={person.name}
+            width={size}
+            height={size}
+        />
+    )
+}
+```
+
+utils.js
+
+```jsx
+export function getImageUrl(person, size = "s") {
+    return (
+        "https://i.imgur.com/" + 
+        person.imageId +
+        size + 
+        ".jpg"
+    )
+}
+```
+
+<br>
+
+# Props 如何随时间变化
+
+下面的 `Clock` 组件从其父组件接收两个 props：`color` 和 `time`。（父组件的代码被省略，因为它使用 state，我们暂时不会深入研究）。
+
+尝试在下面的选择框中更改颜色：
+
+Clock.js
+
+```jsx
+export default function Clock({ color, time }) {
+    return (
+        <h1 style={{ color: color }}>
+            {time}
+        </h1>
+    )
+}
+```
+
+这个例子说明，**一个组件可能会随着时间的推移收到不同的 props。** Props 并不总是静态的！在这里，`time` prop 每秒都在变化。当你选择另一种颜色时，`color` prop 也改变了。Props 反映了组件在任何时间点的数据，并不仅仅是在开始时。
+
+然而，props 是 [不可变的](https://en.wikipedia.org/wiki/Immutable_object)（一个计算机科学术语，意思是“不可改变”）。当一个组件需要改变它的 props（例如，响应用户交互或新数据）时，它不得不“请求”它的父组件传递 **不同的 props** —— 一个新对象！它的旧 props 将被丢弃，最终 JavaScript 引擎将回收它们占用的内存。
+
+**不要尝试“更改 props”。** 当你需要响应用户输入（例如更改所选颜色）时，你可以“设置 state”，你可以在 [State：组件的记忆](https://zh-hans.react.dev/learn/state-a-components-memory) 中继续了解。
+
