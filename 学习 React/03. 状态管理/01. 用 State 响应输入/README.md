@@ -204,9 +204,228 @@ export default function Form({
 }
 ```
 
+>深入探讨
+>
+>#### 同时展示大量的视图状态
+>
+>如果一个组件有多个视图状态，你可以很方便地将它们展示在一个页面中：
+>
+>`Form.js`
+>
+>```javascript
+>export default function Form({ status }) {
+>  if (status === 'success') {
+>    return <h1>That's right!</h1>
+>  }
+>  return (
+>    <form>
+>      <textarea disabled={
+>        status === 'submitting'
+>      } />
+>      <br />
+>      <button disabled={
+>        status === 'empty' ||
+>        status === 'submitting'
+>      }>
+>        Submit
+>      </button>
+>      {status === 'error' &&
+>        <p className="Error">
+>          Good guess but a wrong answer. Try again!
+>        </p>
+>      }
+>    </form>
+>  );
+>}
+>```
+>
+>`App.js`
+>
+>```jsx
+>import Form from './Form.js';
+>
+>let statuses = [
+>  'empty',
+>  'typing',
+>  'submitting',
+>  'success',
+>  'error',
+>];
+>
+>export default function App() {
+>  return (
+>    <>
+>      {statuses.map(status => (
+>        <section key={status}>
+>          <h4>Form ({status}):</h4>
+>          <Form status={status} />
+>        </section>
+>      ))}
+>    </>
+>  );
+>}
+>```
+>
+>类似这样的页面通常被称作“living styleguide”或“storybook”。
 
+### 步骤 2：确定是什么触发了这些状态的改变 
 
+你可以触发 state 的更新来响应两种输入：
 
+- **人为**输入。比如点击按钮、在表单中输入内容，或导航到链接。
+- **计算机**输入。比如网络请求得到反馈、定时器被触发，或加载一张图片。
+
+以上两种情况中，**你必须设置 [state 变量](https://zh-hans.react.dev/learn/state-a-components-memory#anatomy-of-usestate) 去更新 UI**。对于正在开发中的表单来说，你需要改变 state 以响应几个不同的输入：
+
+- **改变输入框中的文本时**（人为）应该根据输入框的内容是否是**空值**，从而决定将表单的状态从空值状态切换到**输入中**或切换回原状态。
+- **点击提交按钮时**（人为）应该将表单的状态切换到**提交中**的状态。
+- **网络请求成功后**（计算机）应该将表单的状态切换到**成功**的状态。
+- **网络请求失败后**（计算机）应该将表单的状态切换到**失败**的状态，与此同时，显示错误信息。
+
+>### 注意
+>
+>注意，人为输入通常需要 [事件处理函数](https://zh-hans.react.dev/learn/responding-to-events)！
+
+为了可视化这个流程，请尝试在纸上画出圆形标签以表示每个状态，两个状态之间的改变用箭头表示。你可以像这样画出很多流程并且在写代码前解决许多 bug。
+
+### 步骤 3：通过 `useState` 表示内存中的 state 
+
+接下来你会需要在内存中通过 [`useState`](https://zh-hans.react.dev/reference/react/useState) 表示组件中的视图状态。诀窍很简单：state 的每个部分都是“处于变化中的”，并且**你需要让“变化的部分”尽可能的少**。更复杂的程序会产生更多 bug！
+
+先从**绝对必须**存在的状态开始。例如，你需要存储输入的 `answer` 以及用于存储最后一个错误的 `error` （如果存在的话）：
+
+```jsx
+const [answer, setAnswer] = useState('');
+const [error, setError] = useState(null);
+```
+
+接下来，你需要一个状态变量来代表你想要显示的那个可视状态。通常有多种方式在内存中表示它，因此你需要进行实验。
+
+如果你很难立即想出最好的办法，那就先从添加足够多的 state 开始，**确保**所有可能的视图状态都囊括其中：
+
+```jsx
+const [isEmpty, setIsEmpty] = useState(true);
+const [isTyping, setIsTyping] = useState(false);
+const [isSubmitting, setIsSubmitting] = useState(false);
+const [isSuccess, setIsSuccess] = useState(false);
+const [isError, setIsError] = useState(false);
+```
+
+你最初的想法或许不是最好的，但是没关系，重构 state 也是步骤中的一部分！
+
+### 步骤 4：删除任何不必要的 state 变量 
+
+你会想要避免 state 内容中的重复，从而只需要关注那些必要的部分。花一点时间来重构你的 state 结构，会让你的组件更容易被理解，减少重复并且避免歧义。你的目的是**防止出现在内存中的 state 不代表任何你希望用户看到的有效 UI 的情况。**（比如你绝对不会想要在展示错误信息的同时禁用掉输入框，导致用户无法纠正错误！）
+
+这有一些你可以问自己的， 关于 state 变量的问题：
+
+- **这个 state 是否会导致矛盾**？例如，`isTyping` 与 `isSubmitting` 的状态不能同时为 `true`。矛盾的产生通常说明了这个 state 没有足够的约束条件。两个布尔值有四种可能的组合，但是只有三种对应有效的状态。为了将“不可能”的状态移除，你可以将他们合并到一个 `'status'` 中，它的值必须是 `'typing'`、`'submitting'` 以及 `'success'` 这三个中的一个。
+- **相同的信息是否已经在另一个 state 变量中存在**？另一个矛盾：`isEmpty` 和 `isTyping` 不能同时为 `true`。通过使它们成为独立的 state 变量，可能会导致它们不同步并导致 bug。幸运的是，你可以移除 `isEmpty` 转而用 `message.length === 0`。
+- **你是否可以通过另一个 state 变量的相反值得到相同的信息**？`isError` 是多余的，因为你可以检查 `error !== null`。
+
+在清理之后，你只剩下 3 个（从原本的 7 个！）*必要*的 state 变量：
+
+```jsx
+const [answer, setAnswer] = useState('');
+const [error, setError] = useState(null);
+const [status, setStatus] = useState('typing'); // 'typing', 'submitting', or 'success'
+```
+
+正是因为你不能在不破坏功能的情况下删除其中任何一个状态变量，因此你可以确定这些都是必要的。
+
+>深入探讨
+>
+>#### 通过 reducer 来减少“不可能” state
+>
+>尽管这三个变量对于表示这个表单的状态来说已经足够好了，仍然是有一些中间状态并不是完全有意义的。例如一个非空的 `error` 当 `status` 的值为 `success` 时没有意义。为了更精确地模块化状态，你可以 [将状态提取到一个 reducer 中](https://zh-hans.react.dev/learn/extracting-state-logic-into-a-reducer)。Reducer 可以让你合并多个状态变量到一个对象中并巩固所有相关的逻辑！
+
+### 步骤 5：连接事件处理函数以设置 state 
+
+最后，创建事件处理函数去设置 state 变量。下面是绑定好事件的最终表单：
+
+```jsx
+import { useState } from 'react';
+
+export default function Form() {
+  const [answer, setAnswer] = useState('');
+  const [error, setError] = useState(null);
+  const [status, setStatus] = useState('typing');
+
+  if (status === 'success') {
+    return <h1>That's right!</h1>
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setStatus('submitting');
+    try {
+      await submitForm(answer);
+      setStatus('success');
+    } catch (err) {
+      setStatus('typing');
+      setError(err);
+    }
+  }
+
+  function handleTextareaChange(e) {
+    setAnswer(e.target.value);
+  }
+
+  return (
+    <>
+      <h2>City quiz</h2>
+      <p>
+        In which city is there a billboard that turns air into drinkable water?
+      </p>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          value={answer}
+          onChange={handleTextareaChange}
+          disabled={status === 'submitting'}
+        />
+        <br />
+        <button disabled={
+          answer.length === 0 ||
+          status === 'submitting'
+        }>
+          Submit
+        </button>
+        {error !== null &&
+          <p className="Error">
+            {error.message}
+          </p>
+        }
+      </form>
+    </>
+  );
+}
+
+function submitForm(answer) {
+  // Pretend it's hitting the network.
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      let shouldError = answer.toLowerCase() !== 'lima'
+      if (shouldError) {
+        reject(new Error('Good guess but a wrong answer. Try again!'));
+      } else {
+        resolve();
+      }
+    }, 1500);
+  });
+}
+```
+
+尽管这些代码相对与最初的命令式的例子来说更长，但是却更加健壮。将所有的交互变为 state 的改变，可以让你避免之后引入新的视图状态后导致现有 state 被破坏。同时也使你在不必改变交互逻辑的情况下，更改每个状态对应的 UI。
+
+## 摘要
+
+- 声明式编程意味着为每个视图状态声明 UI 而非细致地控制 UI（命令式）。
+- 当开发一个组件时：
+  1. 写出你的组件中所有的视图状态。
+  2. 确定是什么触发了这些 state 的改变。
+  3. 通过 `useState` 模块化内存中的 state。
+  4. 删除任何不必要的 state 变量。
+  5. 连接事件处理函数去设置 state。
 
 
 
