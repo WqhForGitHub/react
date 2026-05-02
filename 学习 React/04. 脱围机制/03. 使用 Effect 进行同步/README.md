@@ -244,4 +244,64 @@ export default function App() {
 	);
 }
 ```
+原因在于，你的 Effect 内部代码依赖于 `isPlaying` prop 来决定该做什么，但你并没有显式声明这个依赖关系。为了解决这个问题，将 `isPlaying` 添加至依赖数组中：
+```jsx
+useEffect(() => {
+	if (isPlaying) { // isPlaying 在此处使用
+	} else {
+	}
+}, [isPlaying]); // 所以它必须在此处声明
+```
+现在所有的依赖都已经声明，所以没有错误了。指定 `[isPlaying]` 作为依赖数组会告诉 React，如果 `isPlaying` 作为依赖数组会告诉 React：如果 `isPlaying` 与上次渲染时相同，就跳过重新运行 Effect。这样一来，输入框的输入不会触发 Effect 重新运行，只有按下播放/暂停按钮会触发。
+`App.js`
+```jsx
+import { useState, useRef, useEffect } from 'react';
 
+function VideoPlayer({ src, isPlaying }) {
+	const ref = useRef(null);
+	
+	useEffect(() => {
+		if (isPlaying) {
+			console.log('调用 video.play()');
+			ref.current.play();
+		} else {
+			console.log('调用 video.pause()');
+			ref.current.pause();
+		}
+	}, [isPlaying]);
+	
+	return <video ref={ref} src={src} loop playsInline />;
+}
+
+export default function App() {
+	const [isPlaying, setIsPlaying] = useState(false);
+	const [text, setText] = useState('');
+	return (
+		<>
+			<input value={text} onChange={e => setText(e.target.value)} />
+			<button onClick={() => setIsPlaying(!isPlaying)}>
+				{isPlaying ? '暂停' : '播放'}
+			</button>
+			<VideoPlayer
+				isPlaying={isPlaying}
+				src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+			/>
+		</>
+	);
+}
+```
+依赖数组可以包含多个依赖项。只有当你指定的**所有**依赖项的值都与上一次渲染时完全相同，React 才会跳过重新运行该 Effect。React 使用 `Object.is` 来比较依赖项的值。有关详细信息，请参阅 `useEffect` 参考文档。
+**请注意，你不能随意选择依赖项**。如果你指定的依赖项与 React 根据 Effect 内部代码所推断出的依赖项不匹配，你将收到来自 linter 的错误提示。这有助于捕捉代码中的许多 bug。如果你不希望某些代码重新运行，那么你应当修改 Effect 代码本身，使其不再需要该依赖项。
+陷阱
+没有依赖数组和使用空数组 `[]` 作为依赖数组，行为是不同的：
+```jsx
+useEffect(() => {
+});
+
+useEffect(() => {
+}, []);
+
+useEffect(() => {
+}, [a, b]);
+```
+我们会在下一步详细了解什么是**挂载（mount）**。
