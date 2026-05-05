@@ -335,3 +335,420 @@ function VideoPlayer({ src, isPlaying }) {
 ```
 `useState` 返回的 `set` 函数也具有稳定的标识，因此它们通常也会被省略。如果在省略某个依赖项时 linter 不会报错，那么这么做就是安全的。
 省略始终稳定的依赖项仅在 linter 能看到对象是稳定的时候才有效。例如，如果 `ref` 是从父组件传递过来的，则必须在依赖数组中指定它。这很有必要，因为你无法确定父组件是一直传递相同的 ref，还是根据条件传递不同的 ref。所以，你的 Effect 会依赖于被传递的是哪个 ref。
+### 第三步：按需添加清理（cleanup）函数
+
+考虑一个不同的例子。假如你正在编写一个 `ChatRoom` 组件，该组件在显示时需要连接到聊天服务器。现在为你提供了 `createConnection()` API，该 API 返回一个包含 `connect()` 与 `disconnection()` 方法的对象。如何确保组件在显示时始终保持连接？
+从编写 Effect 的逻辑开始：
+```jsx
+useEffect(() => {
+	const connection = createConnection();
+	connection.connect();
+})
+```
+如果每次重新渲染后都得进行连接，这会很慢，所以你需要添加依赖数组：
+```jsx
+useEffect(() => {
+	const connection = createConnection();
+	connection.connect();
+}, []);
+```
+**由于 Effect 中的代码没有使用任何 props 或 state，所以依赖数组为空数组 `[]`。这告诉 React 仅在组件挂载（即首次显示在页面上）时运行此代码**。
+试试运行下面的代码：
+`App.js`
+```jsx
+import { useEffect } from 'react';
+import { createConnection } from './chat.js';
+
+export default function ChatRoom() {
+	useEffect(() => {
+		const connection = createConnection();
+		connection.connect();
+	}, []);
+	return <h1>欢迎来到聊天室</h1>;
+}
+```
+`chat.js`
+```jsx
+export function createConnection() {
+	// 真正的实现实际上会连接到服务器
+	return {
+		connect() {
+			console.log('✅ 连接中……');
+		},
+		disconnect() {
+			console.log('❌ 连接断开。');
+		}
+	};
+}
+```
+这里的 Effect 仅在组件挂载时运行，所以你可能以为 `"✅ 连接中……"` 只会在控制台中被打印一次。**然而实际情况是 `"✅ 连接中……"` 被打印了两次！为什么会这样**？
+假设 `ChatRoom` 组件是一个大型多页面应用中的一部分。用户最初在 `ChatRoom` 页面上。组件挂载并调用 `connection.connect()` 。接着用户可能会导航到另一个页面，比如切换到“设置”页面，于是 `ChatRoom` 组件被卸载。最后，当用户点击“返回”时，`ChatRoom` 组件再次挂载。这将建立第二个连接——但第一个连接从未被销毁！随着用户在应用中来回切换，连接将会不断累积。
+这类 bug 在没有大量手动测试的情况下很容易被忽略。为了帮助你快速发现它们，在开发环境中，React 会在组件首次挂载后立即重新挂载一次。
+两次出现 `"✅ 连接中……"` 能够帮助你注意到真正的问题：在代码中，组件被卸载时没有关闭连接。
+为了解决这个问题，可以在 Effect 中返回一个 **清理（cleanup）函数**。
+```jsx
+useEffect(() => {
+	const connection = createConnection();
+	connection.connect();
+	return () => {
+		connection.disconnect();
+	};
+}, []);
+```
+React 会在每次 Effect 重新运行之前调用清理函数，并在组件卸载（被移除）时最后一次调用清理函数。让我们看看实现清理函数后会发生什么：
+`App.js`
+```jsx
+import { useState, useEffect } from 'react';
+import { createConnection } from './chat.js';
+
+export default function ChatRoom() {
+	useEffect(() => {
+		const connection = createConnection();
+		connection.connect();
+		return () => connection.disconnect();
+	}, []);
+	return <h1>欢迎来到聊天室</h1>;
+}
+```
+`chat.js`
+```jsx
+export function createConnection() {
+	// 真正的实现实际上会连接到服务器
+	return {
+		connect() {
+			console.log('✅ 连接中……');
+		},
+		disconnect() {
+			console.log('❌ 连接断开。');
+		}
+	};
+}
+```
+现在在开发环境下，你会看到三条控制台日志：
+
+1. `"✅ 连接中……"`
+2. `"❌ 连接断开。"`
+3. `"✅ 连接中……"`
+
+**在开发环境下，这是正确的行为**。通过重新挂载你的组件，React 验证了离开页面再返回不会导致代码出错。因为本就应该先断开然后再重新连接！如果你很好地实现了清理函数，那么无论是只执行一次 Effect ，还是执行、清理、再执行，都应该没有用户可见的区别。之所以会有额外的一次 connect/disconnect 调用，是因为在开发环境下 React 在检测你代码中的 bug。因此这是正常现象，不要去试图消除它！
+**在生产环境下，你只会看到 `"✅ 连接中……"` 打印一次**。这是因为重新挂载组件只会在开发环境下发生，以此帮助你找到需要清理的 Effect。你可以通过关闭 严格模式 来禁用这个行为，但我们建议保留它。它可以帮助你发现许多类似上述的 bug。
+## 如何处理在开发环境下 Effect 运行了两次？
+
+React 有意在开发环境下重新挂载你的组件，来找到类似上例中的 bug。**你需要思考的不是如何只运行一次 Effect**，**而是如何修复我的 Effect 来让它在重新挂载后正常运行**。
+通常，答案是实现清理函数。清理函数应该停止或撤销 Effect 所做的一切。原则是用户不应该感受到 Effect 只执行一次（在生产环境中）和连续执行 挂载 -> 清理 -> 挂载（在开发环境中）之间的区别。
+你将编写的大多数 Effect 都会符合下列的常见模式之一。
+陷阱
+不要使用 ref 来防止触发 Effect
+为了防止 Effect 在开发环境中触发两次，一个常见错误是使用 `ref` 来让 Effect 只运行一次。例如，你可能会用 `useRef` 修复上述的 bug：
+```jsx
+const connectionRef = useRef(null);
+useEffect(() => {
+	if (!connectionRef.current) {
+		connectionRef.current = createConnection();
+		connectionRef.current.connect();
+	}
+}, []);
+```
+它虽然使你在开发环境下只看到一次 `“✅ 正在连接...”`，但并没有修复这个 bug。
+
+当用户离开时，连接没有被关闭，当用户返回时，又会创建一个新的连接。随着用户浏览应用，连接会不断累积，就像“修复”之前一样。
+
+要修复这个 bug，仅仅让 Effect 只运行一次是不够的。想要 Effect 在重新挂载后正常运行，就得按照之前的方法清除连接。
+
+请看下面的示例，了解如何处理常见模式。
+## 管理非 React 小部件
+
+有时你需要添加不是用 React 实现的 UI 小部件。比如说你想在你的页面添加一个地图组件。它有一个 `setZoomLevel()` 方法，然后你希望地图的缩放比例和代码中的 `zoomLevel` state 保持同步。你的 Effect 应该类似于：
+```jsx
+useEffect(() => {
+	const map = mapRef.current;
+	map.setZoomLevel(zoomLevel);
+}, [zoomLevel]);
+```
+请注意，这种情况下不需要清理操作。在开发环境中，虽然 React 会调用 Effect 两次，但这没关系，因为用相同的值调用 `setZoomLevel` 两次不会造成任何影响。虽然在开发环境下它可能会稍微慢一些，但问题不大，因为在生产环境下它不会多余地重新挂载。
+有些 API 可能不允许你连续调用两次。例如，内置的 `<dialog>` 元素的 `showModal` 方法在连续被调用两次时会抛出异常。此时可以通过实现清理函数来使其关闭对话框：
+```jsx
+useEffect(() => {
+	const dialog = dialogRef.current;
+	dialog.showModal();
+	return () => dialog.close();
+}, []);
+```
+在开发环境中，你的 Effect 会先调用 `showModal()`，然后立即调用 `close()`，之后再次调用 `showModal()`。这与在生产环境中只调用一次 `showModal()` 的用户可见行为是相同的。
+订阅事件
+如果你的 Effect 订阅了某些事件，清理函数应退订这些事件：
+```jsx
+useEffect(() => {
+	function handleScroll(e) {
+		console.log(window.scrollX, window.scrollY);
+	}
+	window.addEventListener('scroll', handleScroll);
+	return () => window.removeEventListener('scroll', handleScroll);
+}, []);
+```
+在开发环境中，你的 Effect 会先调用 `addEventListener()`，然后立即调用 `removeEventListener()`，接着再次使用相同的处理函数调用 `addEventListener()`。因此，每次只会有一个有效订阅。这与在生产环境中只调用一次 `addEventListener()` 所产生的用户可见行为是相同的。
+## 触发动画
+
+如果你的 Effect 触发了一些动画，清理函数应将动画重置为初始状态：
+```jsx
+useEffect(() => {
+	const node = ref.current;
+	node.style.opacity = 1; // 触发动画
+	return () => {
+		node.style.opacity = 0; // 重置为初始值
+	};
+}, []);
+```
+在开发环境中，透明度由 `1` 变为 `0`，再变为 `1`。这与在生产环境中，直接将其设置为 `1` 具有相同的用户可见行为。如果你使用了支持补间动画的第三方动画库，你的清理函数应将时间轴重置为初始状态。
+
+## 获取数据
+
+如果你的 Effect 需要获取数据，清理函数应中止请求或忽略其结果：
+```jsx
+useEffect(() => {
+	let ignore = false;
+	
+	async function startFetching() {
+		const json = await fetchTodos(userId);
+		if (!ignore) {
+			setTodos(json);
+		}
+	}
+	
+	startFetching();
+	
+	return () => {
+		ignore = true;
+	};
+}, [userId]);
+```
+你无法“撤销”已经发生的网络请求，但是你的清理函数应当确保那些不再相关的请求不会继续影响你的应用。如果 `userId` 从 `'Alice'` 变为 `'Bob'`，那么请确保 `'Alice'` 的响应数据被忽略，即使它在 `'Bob'` 之后到达。
+
+**在开发环境中，你会在浏览器调试工具的“网络”选项卡中看到两条请求**。这是正常的。使用上述方法，第一个 Effect 将立即被清理，所以它的 `ignore` 变量会被设置为 `true`。因此，即使有额外的请求，由于有 `if (!ignore)` 的检查，也不会影响 state。
+
+**在生产环境中，只会有一条请求**。如果开发环境中的第二次请求给你造成了困扰，最好的办法是使用一个能够对请求去重并缓存响应的方案：
+```jsx
+function TodoList() {
+	const todos = useSomeDataLibrary(`/api/user/${userId}/todos`);
+}
+```
+这不仅可以提高开发体验，还可以让你的应用程序响应更快。例如，当用户点击返回按钮时，不用再等待数据重新加载，因为它已经被缓存。你可以自己构建这样的缓存机制，也可以使用很多在 Effect 中手动获取数据的替代方法。
+深入探讨
+在 Effect 中进行数据请求的替代方案
+在 Effect 中直接编写 `fetch` 请求是一种常见的数据获取方式，特别是在完全客户端渲染的应用中。然而，这种方法非常手动化，并且有明显的弊端：
+
+- **Effect 不会在服务端运行**。这意味着最初由服务器渲染的 HTML 只会包含加载状态，而没有实际数据。客户端必须先下载所有的 JavaScript 并渲染应用，才会发现它需要加载数据——这并不高效。
+- **直接在 Effect 中进行数据请求，容易产生“网络瀑布（network waterfall）”**。首先父组件渲染时请求一些数据，随后渲染子组件，接着子组件开始请求它们的数据。如果网络速度不快，这种方式会比并行获取所有数据慢得多。
+- **直接在 Effect 中进行数据请求往往无法预加载或缓存数据**。例如，如果组件卸载后重新挂载，它必须重新获取数据。
+- **不够简洁**。编写 fetch 请求时为了避免竞态条件（race condition）等问题，会需要很多样板代码。
+
+这些弊端并不仅限于 React。任何库在组件挂载时进行数据获取都会遇到这些问题。与路由处理一样，要做好数据获取并非易事，因此我们推荐以下方法：
+
+- **如果你正在使用框架 ，请使用其内置的数据获取机制**。现代 React 框架集成了高效的数据获取机制，不会出现上述问题。
+- **否则，请考虑使用或构建客户端缓存**。流行的开源解决方案包括TanStack Query、useSWR 和React Router v6.4+。你也可以自己构建解决方案：在底层使用 Effect，但添加对请求的去重、缓存响应以及避免网络瀑布（通过预加载数据或将数据请求提升到路由层次）的逻辑。
+
+如果这些方法都不适合你，你可以继续直接在 Effect 中获取数据。
+## 发送分析报告
+
+考虑以下代码，它在页面访问时发送一个分析事件：
+```jsx
+useEffect(() => {
+	logVisit(url); // 发动 POST 请求
+}, [url]);
+```
+在开发环境中，对于每个 URL，`logVisit` 都会被调用两次，因此你可能会尝试修复这个问题。**我们建议保持不动**。与之前示例类似，运行一次还是运行两次，在用户可见的行为上没有区别。从实际角度来看，`logVisit` 不应该在开发环境中执行任何操作，因为你不会想让开发设备的日志影响生产环境的统计数据。每次保存文件时组件都会重新挂载，因此在开发环境中会记录额外的访问日志。
+**在生产环境中，不会有重复的访问日志**。
+为了调试发送的分析事件，你可以将应用部署到一个运行在生产模式下的暂存环境，或者暂时禁用 严格模式 及其仅在开发环境中的重新挂载检查。你还可以在路由更改的事件处理程序中发送分析数据，而不是在 Effect 中发送。对于更精确的分析，可以使用交叉观察器来跟踪哪些组件位于视口中以及它们保持可见的时间。
+
+## 不适用于 Effect：初始化应用
+
+某些逻辑应该只在应用启动时运行一次。你可以将它放在组件外部：
+```jsx
+if (typeof window !== 'undefined') {
+	checkAuthToken();
+	loadDataFromLocalStorage();
+}
+
+function App() {
+}
+```
+这可以确保此类逻辑只在浏览器加载页面后运行一次。
+
+## 不适用于 Effect：购买商品
+
+有时，即使你编写了清理函数，也无法避免用户观察到 Effect 运行了两次。比如你的 Effect 发送了一个像购买商品这样的 POST 请求：
+```jsx
+useEffect(() => {
+	// 🔴 错误：此处的 Effect 在开发环境中会触发两次，暴露出代码中的问题。
+	fetch('/api/buy'm { method: 'POST' })
+}, []);
+```
+你肯定不希望购买两次商品。这也是为什么你不应该把这种逻辑放在 Effect 中。如果用户跳转到另一个页面，然后按下“返回”按钮，你的 Effect 就会再次运行。你不希望用户在访问页面时就购买产品，而是在他们点击“购买”按钮时才购买。
+
+购买操作并不是由渲染引起的，而是由特定的交互引起的。它应该只在用户按下按钮时执行。因此，**它不应该写在 Effect 中，应当把 `/api/buy` 请求移动到“购买”按钮的事件处理程序中**：
+```jsx
+function handleClick() {
+	// ✅ 购买行为是一个事件，因为它是由特定的交互引起的。
+	fetch('/api/buy', { method: 'POST' });
+}
+```
+**这说明了如果重新挂载破坏了应用的逻辑，通常便暴露了存在的 bug**。对用户而言，访问一个页面不应该与访问页面后点击链接、再按下“返回”按钮查看页面有区别。React 通过在开发环境中重新挂载组件来验证你的组件是否遵守这一原则。
+## 综合以上内容
+
+这个演练场可以帮助你“感受” Effect 在实际中的工作方式。
+
+这个例子使用`setTimeout`调度一个日志记录，日志会在 Effect 运行三秒后显示输入的文本。清理函数会取消挂起的延时器。从按下“挂载组件”开始：
+`App.js`
+```jsx
+import { useState, useEffect } from 'react';
+
+function Playground() {
+	const [text, setText] = useState('a');
+	
+	useEffect(() => {
+		function onTimeout() {
+			console.log('⏰ ' + text);
+		}
+		
+		console.log('🔵 调度 "' + text + '" 日志');
+		const timeoutId = setTimeout(onTimeout, 3000);
+		
+		return () => {
+			console.log('🟡 取消 "' + text + '" 日志');
+			clearTimeout(timeoutId);
+		}
+	}, [text]);
+	
+	return (
+		<>
+			<label>
+				日志内容：{' '}
+				<input
+					value={text}
+					onChange={e => setText(e.target.value)}
+				/>
+			</label>
+			<h1>{text}</h1>
+		</>
+	);
+}
+
+export default function App() {
+	const [show, setShow] = useState(false);
+	return (
+		<>
+			<button onClick={() => setShow(!show)}>
+				{show ? '卸载' : '挂载'}组件
+			</button>
+			{show && <hr />}
+			{show && <Playground />}
+		</>
+	);
+}
+```
+你首先会看到三条日志：`调度 "a" 日志`，`取消 "a" 日志`，再一条 `调度 "a" 日志`。三秒后，你还会看到一条日志：`a`。正如你先前所学，额外的调度/取消日志是因为 React 在开发环境中会重新挂载组件一次，以验证你是否正确实现了清理操作。
+
+现在编辑输入框，输入 `abc`。如果输入速度足够快，你会看到 `调度 "ab" 日志`，紧接着 `取消 "ab" 日志` 和 `调度 "abc" 日志`。**React 总是在执行下一轮渲染的 Effect 之前清理上一轮渲染的 Effect**。这就是为什么即使你快速输入，最多也只有一个延时器被调度。试试多次编辑输入框，并观察控制台以了解 Effect 是如何被清理的。
+
+在输入框中输入一些内容，然后立即按下“卸载组件”。注意卸载组件时是如何清理最后一轮渲染的 Effect 的。在这里，它会在最后一个延迟器要触发之前取消它。
+
+最后，在上面的代码中注释掉清理函数，这样延时器就不会被取消。尝试快速输入 `abcde`。你觉得三秒后会发生什么？延时器中的 `console.log(text)` 会打印 **最新** 的 `text` 值并生成五条 `abcde` 日志吗？试试看吧，验证一下你的直觉！
+
+三秒后，你应该会看到一系列的日志：`a`、`ab`、`abc`、`abcd` 与 `abcde`，而不是五条 `abcde` 日志。这是因为 **每个 Effect 都会“捕获”它对应渲染时的 `text` 值**。即使 `text` 的值发生了变化，渲染时 `text = 'ab'` 的 Effect 总是会得到 `'ab'`。换句话说，每个渲染的 Effect 都是相互独立的。如果你对这种机制感兴趣，可以阅读有关闭包的内容。
+深入探讨
+每一轮渲染都有其自己的 Effect
+你可以将 `useEffect` 理解为“附加”一段行为到渲染输出中。考虑下面这个 Effect：
+```jsx
+export default function ChatRoom({ roomId }) {
+	useEffect(() => {
+		const connection = createConnection(roomId);
+		connection.connect();
+		return () => connection.disconnect();
+	}, [roomId]);
+	
+	return <h1>欢迎来到 {roomId}</h1>
+}
+```
+让我们看看当用户在应用程序中切换页面时到底发生了什么。
+初次渲染
+用户访问 `<ChatRoom roomId="general" />`。我们假设`roomId` 的值为 `'general'`：
+```jsx
+// 首次渲染时的 JSX（roomId 为 "general"）  
+
+return <h1>欢迎来到 general！</h1>;
+```
+**Effect 也是渲染输出的一部分**。首次渲染的 Effect 变为：
+```jsx
+//首先渲染时的 Effect（roomId 为 "general"）  
+
+() => {  
+	const connection = createConnection('general');  
+	connection.connect();  
+	return () => connection.disconnect();  
+
+},  
+// 首次渲染时的依赖项（roomId 为 "general"）  
+['general']
+```
+React 运行这个 Effect 来连接到 `'general'` 聊天室。
+依赖项相同时的重新渲染
+假设 `<ChatRoom roomId="general" />` 重新渲染。输出的 JSX 不变：
+```jsx
+// 第二次渲染时的 JSX（roomId 为 "general"）  
+return <h1>Welcome to general!</h1>;
+```
+React 看到渲染输出没有改变，所以不更新 DOM 。
+第二次渲染的 Effect 如下所示：
+```jsx
+// 第二次渲染时的 Effect（roomId 为 "general"）  
+
+() => {  
+	const connection = createConnection('general');  
+	connection.connect();  
+	return () => connection.disconnect();  
+},  
+
+// 第二次渲染时的依赖项（roomId 为 "general"）  
+['general']
+```
+React 将第二次渲染时的 `['general']` 与第一次渲染时的 `['general']` 进行比较。**因为所有的依赖项都相同，React 忽略第二次渲染时的 Effect**。Effect 不会被调用。
+依赖项不同时的重新渲染
+接着，用户访问了 `<ChatRoom roomId="travel" />`。这一次，组件返回了不同的 JSX：
+```jsx
+// 第三次渲染时的 JSX（roomId 为 "travel"）  
+return <h1>欢迎来到 travel！</h1>;
+```
+React 更新 DOM ，将 `"欢迎来到 general"` 改为 `"欢迎来到 travel"`。
+第三次渲染的 Effect 如下所示：
+```jsx
+// 第三次渲染时的 Effect（roomId 为 "travel"）  
+() => {  
+	const connection = createConnection('travel');  
+	connection.connect();  
+	return () => connection.disconnect();  
+}, 
+// 第三次渲染时的依赖项（roomId 为 "travel"）  
+['travel']
+```
+React 将第三次渲染时的 `['travel']` 与第二次渲染时的 `['general']` 相比较。发现依赖项不同：`Object.is('travel', 'general')` 为 `false`。因此 Effect 不能被跳过。
+
+**在 React 执行第三次渲染的 Effect 之前，它需要清理上一个运行的 Effect**。第二次渲染的 Effect 被跳过了。所以 React 需要清理第一次渲染时的 Effect。如果你回看第一次渲染，你会发现第一次渲染时的清理函数所做的事，是在 `createConnection('general')` 所创建的连接上调用 `disconnect()`。也就是从 `'general'` 聊天室断开连接。
+
+之后，React 执行第三次渲染的 Effect。它连接到 `'travel'` 聊天室。
+组件卸载
+
+最后，假设用户离开了当前页面，`ChatRoom` 组件被卸载。React 执行上一个运行的 Effect 的清理函数，也就是第三次渲染时的 Effect。这个清理函数会销毁 `createConnection('travel')` 所创建的连接。这样，应用与 `travel` 房间断开了连接。
+仅开发环境下的行为
+
+开启严格模式 时，React 在每次挂载组件后都会重新挂载组件（组件的 state 与 创建的 DOM 都会被保留）。它可以帮助你找出需要添加清理函数的 Effect，并在早期暴露类似竞态条件这样的 bug。此外，每当你在开发环境中保存文件时，React 也会重新挂载 Effect。这些行为都仅限于开发环境。
+## 摘要
+
+- 与事件不同，Effect 由渲染本身引起，而非特定的交互。
+- Effect 允许你将组件与某些外部系统（第三方 API、网络等）同步。
+- 默认情况下，Effect 在每次渲染（包括初始渲染）后运行。
+- 如果所有依赖项都与上一次渲染时相同，React 会跳过本次 Effect。
+- 你不能“选择”依赖项，它们是由 Effect 内部的代码所决定的。
+- 空的依赖数组（`[]`）对应于组件的“挂载”，即组件被添加到页面上时。
+- 仅在严格模式下的开发环境中，React 会挂载两次组件，以对 Effect 进行压力测试。
+- 如果你的 Effect 因为重新挂载而出现问题，那么你需要实现一个清理函数。
+- React 会在 Effect 再次运行之前和在组件卸载时调用你的清理函数。
