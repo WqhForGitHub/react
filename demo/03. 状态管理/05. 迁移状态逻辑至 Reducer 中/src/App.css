@@ -1,0 +1,257 @@
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.app-header h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  color: var(--text-h);
+}
+
+.app-header p {
+  color: var(--text);
+  font-size: 16px;
+}
+
+/* Navigation */
+.demo-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--mono);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.nav-btn.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Demo sections */
+.demo-section {
+  animation: fadeIn 0.3s ease;
+}
+
+.demo-section h2 {
+  font-size: 22px;
+  margin: 0 0 8px;
+  color: var(--text-h);
+}
+
+.demo-section > p {
+  color: var(--text);
+  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.demo-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--code-bg);
+}
+
+.demo-box h1 {
+  font-size: 24px;
+  margin: 0 0 16px;
+}
+
+/* Code hint */
+.code-hint {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* Add task form */
+.add-task-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.add-task-form input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.add-task-form input[type="text"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.add-task-form button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.add-task-form button:hover {
+  opacity: 0.9;
+}
+
+/* Task list */
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-item {
+  border-bottom: 1px solid var(--border);
+  padding: 8px 0;
+}
+
+.task-item:last-child {
+  border-bottom: none;
+}
+
+.task-item-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.task-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  cursor: pointer;
+}
+
+.task-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.task-text {
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.task-text.done {
+  text-decoration: line-through;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.task-edit-input {
+  padding: 4px 8px;
+  border: 1px solid var(--accent-border);
+  border-radius: 4px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text-h);
+  flex: 1;
+}
+
+.task-edit-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.task-actions button {
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.task-actions button:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.btn-delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Footer */
+.app-footer {
+  margin-top: auto;
+  padding-top: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.app-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

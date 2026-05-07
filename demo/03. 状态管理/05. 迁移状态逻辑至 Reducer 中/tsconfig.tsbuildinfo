@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/tasksreducer.ts","./src/types.ts","./src/vite-env.d.ts","./src/components/addtask.tsx","./src/components/tasklist.tsx","./src/demos/usereducerdemo.tsx","./src/demos/usestatedemo.tsx"],"version":"5.9.3"}

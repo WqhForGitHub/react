@@ -389,7 +389,7 @@ const [tasks, dispatch] = useReducer(tasksReducer, initialTasks);
 
 现在一切都准备就绪了！我们在这里把 reducer 定义在了组件的末尾：
 
-App.js
+`App.js`
 
 ```jsx
 import { useReducer } from 'react';
@@ -580,12 +580,12 @@ Reducer 并非没有缺点！以下是比较它们的几种方法：
 
 编写 `reducer` 时最好牢记以下两点：
 
-- **reducer 必须是纯粹的。** 这一点和 [状态更新函数](https://zh-hans.react.dev/learn/queueing-a-series-of-state-updates) 是相似的，`reducer` 是在渲染时运行的！（actions 会排队直到下一次渲染)。 这就意味着 `reducer` [必须纯净](https://zh-hans.react.dev/learn/keeping-components-pure)，即当输入相同时，输出也是相同的。它们不应该包含异步请求、定时器或者任何副作用（对组件外部有影响的操作）。它们应该以不可变值的方式去更新 [对象](https://zh-hans.react.dev/learn/updating-objects-in-state) 和 [数组](https://zh-hans.react.dev/learn/updating-arrays-in-state)。
+- **reducer 必须是纯粹的。** 这一点和状态更新函数 是相似的，`reducer` 是在渲染时运行的！（actions 会排队直到下一次渲染)。 这就意味着 `reducer`必须纯净，即当输入相同时，输出也是相同的。它们不应该包含异步请求、定时器或者任何副作用（对组件外部有影响的操作）。它们应该以不可变值的方式去更新对象 和数组。
 - **每个 action 都描述了一个单一的用户交互，即使它会引发数据的多个变化。** 举个例子，如果用户在一个由 `reducer` 管理的表单（包含五个表单项）中点击了 `重置按钮`，那么 dispatch 一个 `reset_form` 的 action 比 dispatch 五个单独的 `set_field` 的 action 更加合理。如果你在一个 `reducer` 中打印了所有的 `action` 日志，那么这个日志应该是很清晰的，它能让你以某种步骤复现已发生的交互或响应。这对代码调试很有帮助！
 
 ## 使用 Immer 简化 reducer 
 
-与在平常的 state 中 [修改对象](https://zh-hans.react.dev/learn/updating-objects-in-state#write-concise-update-logic-with-immer) 和 [数组](https://zh-hans.react.dev/learn/updating-arrays-in-state#write-concise-update-logic-with-immer) 一样，你可以使用 `Immer` 这个库来简化 `reducer`。在这里，[`useImmerReducer`](https://github.com/immerjs/use-immer#useimmerreducer) 让你可以通过 `push` 或 `arr[i] =` 来修改 state ：
+与在平常的 state 中修改对象 和数组 一样，你可以使用 `Immer` 这个库来简化 `reducer`。在这里，`useImmerReducer` 让你可以通过 `push` 或 `arr[i] =` 来修改 state ：
 
 package.json
 
