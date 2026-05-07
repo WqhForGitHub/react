@@ -1,0 +1,258 @@
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.app-header h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+  color: var(--text-h);
+}
+
+.app-header p {
+  color: var(--text);
+  font-size: 16px;
+}
+
+/* Navigation */
+.demo-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 14px;
+  font-family: var(--mono);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.nav-btn.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Demo sections */
+.demo-section {
+  animation: fadeIn 0.3s ease;
+}
+
+.demo-section h2 {
+  font-size: 22px;
+  margin: 0 0 8px;
+  color: var(--text-h);
+}
+
+.demo-section > p {
+  color: var(--text);
+  margin-bottom: 16px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.demo-box {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--code-bg);
+}
+
+.demo-box hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 16px 0;
+}
+
+/* Code hint */
+.code-hint {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* Online status demo */
+.demo-box h1 {
+  font-size: 24px;
+  margin: 0 0 12px;
+}
+
+.demo-box button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.demo-box button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Form input demo */
+.demo-box label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.demo-box input[type="text"],
+.demo-box input[type="url"] {
+  display: block;
+  margin-top: 4px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg);
+  color: var(--text-h);
+  box-sizing: border-box;
+}
+
+.demo-box input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.demo-box p {
+  margin: 8px 0 0;
+}
+
+.demo-box p b {
+  color: var(--text-h);
+}
+
+/* Chat room demo */
+.chat-room {
+  text-align: left;
+}
+
+.chat-room label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.chat-room h3 {
+  margin: 12px 0;
+  color: var(--text-h);
+}
+
+.messages {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--bg);
+  margin-bottom: 8px;
+}
+
+.message {
+  padding: 6px 10px;
+  margin: 4px 0;
+  background: var(--accent-bg);
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.muted {
+  color: var(--text);
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* FadeIn demo */
+.welcome-fade {
+  color: white;
+  padding: 50px;
+  text-align: center;
+  font-size: 50px;
+  background-image: radial-gradient(
+    circle,
+    rgba(63, 94, 251, 1) 0%,
+    rgba(252, 70, 107, 1) 100%
+  );
+  border-radius: 12px;
+  margin: 16px 0 0;
+}
+
+/* Footer */
+.app-footer {
+  margin-top: auto;
+  padding-top: 32px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.app-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Select */
+.demo-box select {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.demo-box select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

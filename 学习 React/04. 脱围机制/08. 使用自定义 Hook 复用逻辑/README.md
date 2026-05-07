@@ -41,7 +41,7 @@ export default function StatusBar() {
 ```
 试着开启和关闭网络，注意观察 `StatusBar` 组件应对你的行为是如何更新的。
 
-假设现在你想在另一个不同的组件里 **也** 使用同样的逻辑。你希望实现一个保存按钮，每当网络断开这个按钮就会不可用并且显示“Reconnecting…”而不是“Save progress”。
+假设现在你想在另一个不同的组件里也使用同样的逻辑。你希望实现一个保存按钮，每当网络断开这个按钮就会不可用并且显示“Reconnecting…”而不是“Save progress”。
 
 你可以从复制粘贴 `isOnline` state 和 Effect 到 `SaveButton` 组件开始：
 `App.js`
@@ -1429,7 +1429,7 @@ function useAnimationLoop(isRunning, drawFrame) {
   }, [isRunning]);
 }
 ```
-但是 **没有必要** 这样做。和常规函数一样，最终是由你决定在哪里划分代码不同部分之间的边界。你也可以采取不一样的方法。把大部分必要的逻辑移入一个 [JavaScript 类](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Classes)，而不是把逻辑保留在 Effect 中：
+但是 **没有必要** 这样做。和常规函数一样，最终是由你决定在哪里划分代码不同部分之间的边界。你也可以采取不一样的方法。把大部分必要的逻辑移入一个JavaScript 类，而不是把逻辑保留在 Effect 中：
 `App.js`
 ```jsx
 import { useState, useEffect, useRef } from 'react';
