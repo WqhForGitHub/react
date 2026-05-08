@@ -1,0 +1,219 @@
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  color: #333;
+}
+
+.app h1 {
+  font-size: 32px;
+  color: #1a1a2e;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.intro {
+  text-align: center;
+  color: #666;
+  margin-bottom: 40px;
+  line-height: 1.6;
+}
+
+.demo-section {
+  background: #fafafa;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.demo-section h2 {
+  font-size: 20px;
+  color: #1a1a2e;
+  margin: 0 0 8px 0;
+}
+
+.demo-section > p {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+/* Counter 组件样式 */
+.counter {
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 8px 0;
+  text-align: center;
+  transition: border-color 0.2s, background-color 0.2s;
+  display: block;
+}
+
+.counter.hover {
+  border-color: #646cff;
+  background-color: #f0f0ff;
+}
+
+.counter.fancy {
+  border-color: #ff6b6b;
+  background: linear-gradient(135deg, #ffe0e0, #fff0f0);
+}
+
+.counter h1 {
+  font-size: 36px;
+  margin: 0 0 12px 0;
+  color: #1a1a2e;
+}
+
+.counter button {
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.counter button:hover {
+  background: #535bf2;
+}
+
+/* Label 和 checkbox */
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* 独立按钮 */
+button {
+  background: #646cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: #535bf2;
+}
+
+/* Demo4 暂停提示 */
+p {
+  font-size: 18px;
+  color: #888;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Demo6 输入框 */
+input[type="text"],
+input:not([type]) {
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input:not([type]):focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+/* Messenger 布局 */
+.messenger {
+  display: flex;
+  gap: 20px;
+  min-height: 200px;
+}
+
+.contact-list {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.contact-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.contact-list li {
+  margin-bottom: 4px;
+}
+
+.contact-list button {
+  width: 100%;
+  text-align: left;
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.contact-list button:hover {
+  background: #eee;
+}
+
+.contact-list button.selected {
+  background: #646cff;
+  color: white;
+  border-color: #646cff;
+}
+
+/* Chat 组件样式 */
+.chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat textarea {
+  width: 100%;
+  height: 100px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.chat textarea:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.chat button {
+  align-self: flex-start;
+}

@@ -1,0 +1,240 @@
+/* ===== App Layout ===== */
+.app {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #1a1a2e;
+}
+
+.app-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.app-header h1 {
+  font-size: 2rem;
+  margin: 0 0 8px;
+  color: #16213e;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #555;
+  margin: 0;
+}
+
+/* ===== Navigation ===== */
+.demo-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.nav-btn {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+  transition: all 0.2s ease;
+}
+
+.nav-btn:hover {
+  border-color: #61dafb;
+  color: #0ea5e9;
+}
+
+.nav-btn.active {
+  background: #0ea5e9;
+  border-color: #0ea5e9;
+  color: #fff;
+}
+
+/* ===== Demo Card ===== */
+.demo-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.demo-card h3 {
+  font-size: 1.4rem;
+  margin: 0 0 8px;
+  color: #16213e;
+}
+
+.demo-card p {
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+.demo-card code {
+  background: #f0f4f8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #e11d48;
+}
+
+/* ===== Demo Area ===== */
+.demo-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.demo-area input {
+  padding: 10px 14px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 200px;
+}
+
+.demo-area input:focus {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+}
+
+.demo-area button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #0ea5e9;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.demo-area button:hover {
+  background: #0284c7;
+}
+
+.btn-danger {
+  background: #ef4444 !important;
+}
+
+.btn-danger:hover {
+  background: #dc2626 !important;
+}
+
+/* ===== Code Hint ===== */
+.code-hint {
+  padding: 12px 16px;
+  background: #1e293b;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  overflow-x: auto;
+}
+
+.code-hint code {
+  color: #7dd3fc;
+  background: none;
+  padding: 0;
+}
+
+.code-hint strong {
+  color: #fbbf24;
+}
+
+/* ===== Scroll Demo ===== */
+.scroll-nav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.scroll-nav button {
+  padding: 8px 16px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.scroll-nav button:hover {
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+.scroll-container {
+  overflow-x: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: #f8fafc;
+}
+
+.scroll-list {
+  display: flex;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: max-content;
+}
+
+.scroll-list li {
+  flex-shrink: 0;
+}
+
+.scroll-list img {
+  display: block;
+  border-radius: 8px;
+  width: 300px;
+  height: 200px;
+  object-fit: cover;
+}
+
+/* ===== Todo List ===== */
+.todo-list {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  list-style: none;
+  padding-left: 0;
+  background: #f8fafc;
+}
+
+.todo-list li {
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.todo-list li:last-child {
+  border-bottom: none;
+}
+
+/* ===== Steps ===== */
+.steps {
+  padding-left: 24px;
+  margin: 0 0 16px;
+  color: #555;
+  line-height: 1.8;
+}
+
+.steps li {
+  margin-bottom: 4px;
+}
