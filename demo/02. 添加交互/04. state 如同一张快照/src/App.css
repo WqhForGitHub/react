@@ -1,0 +1,157 @@
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.tab-bar {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.tab-bar button {
+  background: none;
+  border: none;
+  padding: 10px 16px;
+  font: inherit;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-bar button:hover {
+  color: var(--text-h);
+}
+
+.tab-bar button.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.demo-section h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.4em;
+}
+
+.demo-section p {
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.demo-box {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background: var(--bg);
+}
+
+.demo-box h3 {
+  margin: 0 0 12px;
+  font-size: 1.1em;
+}
+
+/* Demo-specific styles */
+
+.demo-box h1 {
+  margin: 0 0 12px;
+  font-size: 1.4em;
+}
+
+.demo-box textarea {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.9em;
+  color: var(--text-h);
+  background: var(--bg);
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+
+.demo-box textarea:focus {
+  border-color: var(--accent);
+}
+
+.demo-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.demo-box label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95em;
+  color: var(--text-h);
+}
+
+.demo-box select {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.9em;
+  color: var(--text-h);
+  background: var(--bg);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.demo-box select:focus {
+  border-color: var(--accent);
+}
+
+button {
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+  padding: 8px 16px;
+  font: inherit;
+  font-size: 0.9em;
+  color: var(--accent);
+  cursor: pointer;
+  transition: background 0.15s, filter 0.15s;
+}
+
+button:hover {
+  filter: brightness(1.1);
+}
+
+input {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.9em;
+  color: var(--text-h);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+code {
+  background: var(--code-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
