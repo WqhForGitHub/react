@@ -76,7 +76,9 @@ function TodoListBad() {
             {todo.text}
           </li>
         ))}
-        {visibleTodos.length > 5 && <li>...还有 {visibleTodos.length - 5} 项</li>}
+        {visibleTodos.length > 5 && (
+          <li>...还有 {visibleTodos.length - 5} 项</li>
+        )}
       </ul>
     </div>
   );
@@ -90,7 +92,7 @@ function TodoListGood() {
   // ✅ 除非 todos 或 filter 发生变化，否则不会重新执行
   const visibleTodos = useMemo(
     () => getFilteredTodos(initialTodos, filter),
-    [filter]
+    [filter],
   );
 
   return (
@@ -120,7 +122,9 @@ function TodoListGood() {
             {todo.text}
           </li>
         ))}
-        {visibleTodos.length > 5 && <li>...还有 {visibleTodos.length - 5} 项</li>}
+        {visibleTodos.length > 5 && (
+          <li>...还有 {visibleTodos.length - 5} 项</li>
+        )}
       </ul>
     </div>
   );
@@ -131,8 +135,8 @@ export default function CachingExpensiveCalculation() {
     <div>
       <h3>2. 缓存昂贵的计算</h3>
       <p>
-        不要使用 Effect 来缓存计算结果。使用 <code>useMemo</code>{" "}
-        来避免在无关 state 变化时重新执行昂贵的计算。
+        不要使用 Effect 来缓存计算结果。使用 <code>useMemo</code> 来避免在无关
+        state 变化时重新执行昂贵的计算。
       </p>
       <div className="comparison">
         <TodoListBad />
