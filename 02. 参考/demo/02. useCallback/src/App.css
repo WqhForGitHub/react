@@ -1,0 +1,116 @@
+.app {
+  width: min(920px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 48px 0;
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+.hero h1 {
+  margin: 0 0 8px;
+  color: var(--heading);
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1.05;
+}
+.subtitle {
+  margin: 0;
+  font-size: 1.08rem;
+}
+.card,
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  padding: 22px;
+}
+.panel {
+  background: var(--panel-strong);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.row,
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.stack {
+  display: grid;
+  gap: 14px;
+}
+button,
+.button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: white;
+  padding: 10px 16px;
+}
+button.secondary {
+  background: transparent;
+  color: var(--accent-strong);
+  border: 1px solid var(--border);
+}
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+input,
+select,
+textarea {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--heading);
+  padding: 10px 12px;
+}
+textarea {
+  width: 100%;
+  min-height: 90px;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-strong);
+  padding: 4px 10px;
+  font-weight: 700;
+}
+.code {
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  overflow: auto;
+}
+.list {
+  padding-left: 20px;
+}
+.muted {
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+.success {
+  color: var(--success);
+}
+.danger {
+  color: var(--danger);
+}
+.highlight {
+  outline: 3px solid var(--accent);
+}
+.dark-preview {
+  background: #201c2b;
+  color: #f5f3ff;
+}
+.dynamic-card {
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
