@@ -188,10 +188,42 @@ function Counter() {
 可以发现，逻辑中的自变量变化，会导致 "有副作用因变量"变化，执行副作用。组件内部工作流程如图 1-1 所示。
 ![组件内部工作流程](https://front-end-1257950569.cos.ap-guangzhou.myqcloud.com/react/react%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E5%8E%9F%E7%90%86%E6%A6%82%E8%A7%88/%E7%BB%84%E4%BB%B6%E5%86%85%E9%83%A8%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B.png)
 图 1-1 组件内部工作流程
+
 综上所述，组件通过三种方式组织逻辑与 UI：
 （1）逻辑中的自变量变化，导致 UI 变化
 （2）逻辑中的自变量变化，导致 "无副作用因变量"变化，导致 UI 变化
 （3）逻辑中的自变量变化，导致 "有副作用因变量"变化，导致副作用
+## 1.1.3 如何在组件之间传输数据
+
+新增 Strong 组件，它会将传递给它的 text 以 "加粗" 的形式显示：
+```jsx
+function Strong({text}) {
+	return <strong>{text}</strong>
+}
+```
+将 Counter 中 UI 部分使用的 fixedNum 替换为 `<Strong text={fixedNum}/>`，页面中会显示 “加粗的 fixedNum”：
+```jsx
+// 替换前（为了便于阅读，省略 onClick 回调函数）
+<p><span>值为</span>{{fixedNum}}</p>
+// 替换后（为了便于阅读，省略 onClick 回调函数）
+<p><span>值为</span><Strong text={{fixedNum}} /></p>
+```
+这里用流程图的形式表示 Counter 与 Strong 组件之间的数据传输，如图 1-2 所示。
+![组件间数据传输示例](https://front-end-1257950569.cos.ap-guangzhou.myqcloud.com/react/react%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E5%8E%9F%E7%90%86%E6%A6%82%E8%A7%88/%E7%BB%84%E4%BB%B6%E9%97%B4%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E7%A4%BA%E4%BE%8B..png) 
+图 1-2 组件间数据传输示例
+
+Counter 逻辑中因变量 fixedNum，通过 Counter 的 UI 传递给 Strong，并在 Strong 的逻辑中作为自变量传递给 Strong 的 UI。
+综上所述，数据在组件之间的传输方式是，组件的自变量或因变量通过 UI 传递给另一个组件，作为其自变量。为了区分不同方式产生的自变量，在前端框架中，"组件内部定义的自变量"通常被称为 state（状态），"其他组件传递而来的自变量"被称为 props（属性）。
+Strong 的例子仅仅展示了父子组件间的数据传递过程，当自变量小跨层级传递时，如图 1-3 表示，A 需要向 C 传递自变量（实际场景可能跨越许多层，为了防止表示这里只设置 ABC 三层）。除采用 "经由 B的层层传递方式"外，也可以通过 store 将自变量直接从 A 传递到 C。
+![使用 store 传递自变量](https://front-end-1257950569.cos.ap-guangzhou.myqcloud.com/react/react%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E5%8E%9F%E7%90%86%E6%A6%82%E8%A7%88/%E4%BD%BF%E7%94%A8store%E4%BC%A0%E9%80%92%E8%87%AA%E5%8F%98%E9%87%8F.png)图 1-3 使用 store 传递自变量
+
+
+
+
+
+
+
+
 
 
 
