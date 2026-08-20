@@ -307,34 +307,104 @@ spanElement.textContent = b + c;
 - 组件级框架
 - 元素级框架
 以常见的前端框架为例，React 属于应用级框架，Vue 属于组件级框架，Svelte 与 Solid.js 属于元素级框架。
+## 1.1.5 React 中的自变量与因变量
 
+这里根据“自变量与因变量”理论为常见的 React Hooks 分类，具体标注如下。
+- useState：定义组件内部的自变量
+- useReducer：useState 本质是“内置 reducer 的 useReducer”。如果将 useReducer 看作“借鉴 Redux 理念的 useState”，也相当于组件内部的自变量
+- useMemo：采用“缓存的方式”定义组件内部“无副作因变量”
+- useCallback：采用“缓存的方式”定义组件内部“无副作用因变量”，缓存的值为函数形式
+- useEffect：定义组件内部“有副作用因变量
+除此之外，还有一个常见 Hook，useRef，我们站在前端框架作者的角度来审视它是自变量还是因变量。框架作者在设计组件时需要提供一些灵活度，使开发者在定义 UI 与逻辑时能够跳出组件的限制，执行一些”有副作用的操作“。比如，虽然框架接管了 UI 的渲染，但开发者有时希望自行操作 DOM，这种情况常见于”在框架中使用原生 JavaScript 实现的库“。
+虽然框架提供了”有副作用因变量“，但如何在过程中（如图 1-5 所示，图中”标记有齿轮的箭头“代表一个过程）执行”有副作用的操作“？这就是 useRef 的用处所在，Ref 是 reference（引用的缩写），用于在组件多次 render 之间缓存一个”引用类型的值“。
+![过程中执行有副作用的操作](https://front-end-1257950569.cos.ap-guangzhou.myqcloud.com/react/react%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E5%8E%9F%E7%90%86%E6%A6%82%E8%A7%88/%E8%BF%87%E7%A8%8B%E4%B8%AD%E6%89%A7%E8%A1%8C%E6%9C%89%E5%89%AF%E4%BD%9C%E7%94%A8%E7%9A%84%E6%93%8D%E4%BD%9C.png)
+图 1-5 过程中执行有副作用的操作
+举例说明，我们希望记录”Counter render 的次数“，使得”Counter UI 中的 Strong“ 仅咋奇数次 render 时显示，在偶数次 render 时不显示、此时不能使用 num 代表 ”Counter render 的次数“，因为 num 保存的是点击次数，点击会造成 render，但是 render 不一定是点击造成的，即 ”Counter render 的次数“ >= num。
+定义 renderCountRef 用来保存 ”Counter render 的次数”，设置其初始值为 1，代表第一次 render：
+```javascript
+// 在 Counter 中定义 Ref
+const renderCountRef = useRef(1);
+// 判断当前是否为奇数次更新
+const idOdd = renderCountRef.current % 2 !== 0;
+// render 次数增加
+renderCountRef.current++;
+```
+在 UI 中，通过 isOdd 判断是否显示 Strong：
+```jsx
+<p onClick={ () => updateNum(num + 1) }>
+	<span>值为</span>
+	{isOdd ? <Strong> text={fixedNum} /> : null}
+</p>
+```
+上例使用 useRef 在“逻辑与 UI 之间”加入了一个“引用类型的值”，用于在多次 render 之间共享“Counter render 的次数”。除本例介绍的过程外，还可以在图 1-5 标记的所有过程中使用 useRef，useRef 的作用就是提供操作的灵活性。
+# 1.2 前端框架使用的技术
 
+上一节讲解了前端框架的分类标准，本节主要介绍前端框架使用的一些主流技术，下一节将以不同类型的框架为例，分析其实现原。
+## 1.2.1 编程：细粒度更新
 
+1.1.2 节在讲解因变量时有一个细节，在 React 中定义因变量时需要显式调用“因变量依赖的自变量”（即 useMemo 的第二个参数），而在 Vue、Mobx 中并不需要显式声明上述参数：
+```jsx
+// 在 React 中定义无副作用因变量
+const y = useMemo(() => x * 2 + 1, [x]);
+// 在 Vue 中定义无副作用因变量
+const y = computed(() => x.value * 2 + 1);
+// 在 Mobx 中定义无副作用因变量
+const y = computed(() => x.data * 2 + 1);
+```
+在 Vue 和 Mobx 中使用的“能自动追踪依赖的技术”被称为“细粒度更新“（Fine-Grained Reactivity），它同时也是许多前端框架建立”自变量变化到UI 变化的底层原理。这不是一项新技术，KnockoutJS 曾经在 2010 年初采用这种技术实现“响应式更新”。
+本节我们将使用 70 行代码实现一个“细粒度更新”的简单示例，本书的主题是 React，因此这里使用 React API 的名称来为实现命名。
+首先，实现 useState，用来定义自变量：
+```jsx
+function useState(value) {
+	const getter = () => value;
+	const setter = (newValue) => value = newValue;
+	
+	return [getter, setter];
+}
+```
+useState 接受初始值 value 为参数，形成闭包。调用 getter 取值会返回闭包中的 value，调用 setter 赋值会修改闭包中的 value。与 React 不同，返回值数组 [0]并不是 value，而是 getter，后面你会理解这样做的意义。
+使用方式如下：
+```jsx
+const [count, setCount] = useState(0);
 
+console.log(count()); // 0
+setCount(1);
+console.log(count()); // 1
+```
+接下来实现“有副作用因变量”，useEffect，期望的行为是：
+（1）useEffect 执行后，回调函数立即执行
+（2）依赖的自变量变化后，回调函数立即执行
+（3）不需要显式指明依赖
+举例说明，执行如下代码后打印前两条信息。。由于 effect1 内部依赖 count，因此 count 变化后会执行回调函数，打印第三条信息。effect2 没有依赖 count，不会执行回调函数：
+```jsx
+const [count, setCount] = useState(0);
 
-
-
-
-
-
-
-
-
- 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// effect1
+useEffect(() => {
+	// 1. 打印 ”count is: 0“
+	console.log('count is:', count());
+})
+// effect2
+useEffect(() => {
+	// 2. 打印”没我什么事儿“
+	console.log('没我什么事儿');
+})
+setCount(2); // 3. 打印 ”count is: 2”
+```
+实现的关键在于建立如图1-6 所示的 useState 与 useEffect 的订阅发布关系：
+（1）在 useEffect 回调中执行 useState 的 getter 时，该 effect 会订阅“该 state 的变化”
+（2）useState 的 setter 在执行时，会向所有“订阅了该 state 变化”的 effect 发布通知
+![useState与useEffect的订阅发布关系](https://front-end-1257950569.cos.ap-guangzhou.myqcloud.com/react/react%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E5%8E%9F%E7%90%86%E6%A6%82%E8%A7%88/useState%E4%B8%8EuseEffect%E7%9A%84%E8%AE%A2%E9%98%85%E5%8F%91%E5%B8%83%E5%85%B3%E7%B3%BB.png)
+图 1-6 useState 与 useEffect 的订阅发布关系
+### ai overview
+先把结论说清楚：**subs1 不是 useState 变量本身，而是“订阅 useState 这个 state 变化的 effect 列表（集合）”。**
+state 内容的集合 subs 用来保存“订阅该 state 变化的 effect”。effect 是每个 useEffect 对应的数据结构：
+```jsx
+const effect = {
+	// 用于执行 useEffect 回调函数
+	execute,
+	// 保存该 useEffect 依赖的 state 对应 subs 的集合
+	deps: new Set()
+}
+```
 
