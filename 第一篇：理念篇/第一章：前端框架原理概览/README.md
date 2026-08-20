@@ -396,9 +396,8 @@ setCount(2); // 3. 打印 ”count is: 2”
 （2）useState 的 setter 在执行时，会向所有“订阅了该 state 变化”的 effect 发布通知
 ![useState与useEffect的订阅发布关系](https://front-end-1257950569.cos.ap-guangzhou.myqcloud.com/react/react%E8%AE%BE%E8%AE%A1%E5%8E%9F%E7%90%86%EF%BC%88%E7%AC%AC%E4%BA%8C%E7%89%88%EF%BC%89/%E7%AC%AC%E4%B8%80%E7%AB%A0%EF%BC%9A%E5%89%8D%E7%AB%AF%E6%A1%86%E6%9E%B6%E5%8E%9F%E7%90%86%E6%A6%82%E8%A7%88/useState%E4%B8%8EuseEffect%E7%9A%84%E8%AE%A2%E9%98%85%E5%8F%91%E5%B8%83%E5%85%B3%E7%B3%BB.png)
 图 1-6 useState 与 useEffect 的订阅发布关系
-### ai overview
-先把结论说清楚：**subs1 不是 useState 变量本身，而是“订阅 useState 这个 state 变化的 effect 列表（集合）”。**
-state 内容的集合 subs 用来保存“订阅该 state 变化的 effect”。effect 是每个 useEffect 对应的数据结构：
+
+state 内部的集合 subs 用来保存“订阅该 state 变化的 effect”，effect 是每个 useEffect 对应的数据结构：
 ```jsx
 const effect = {
 	// 用于执行 useEffect 回调函数
@@ -407,4 +406,43 @@ const effect = {
 	deps: new Set()
 }
 ```
+通过遍历 state.subs，可以找到所有“订阅该 state 变化的 effect”。通过遍历 effect.deps，可以找到所有“该 effect 依赖的 state.subs”。完整的 useEffect 实现如下：
+```jsx
+function useEffect(callback) {
+	const execute = () => {
+		// 重复依赖
+		cleanup(effect);
+		// 将当前 effect 推入栈顶
+		effectStack.push(effect);
+		
+		try {
+			// 执行回调
+			callback();
+		} finally {
+			// effect 出栈
+			effectStack.pop();
+		}
+	}
+	
+	const effect = {
+		execute,
+		deps: new Set()
+	}
+	
+	// 立刻执行一次，建立订阅发布关系
+	execute();
+}
+```
+这里有三个细节需要注意。首先，在 callback 执行前调用 cleanup 清除所有“与该 effect 相关的订阅发布关系“（callback 在执行时会重建订阅发布关系）。这样做的目的将在下文揭晓。cleanup 实现如下：
+```jsx
+function cleanup(effect) {
+	// 从该 effect 订阅的所有 state 对应 subs 中移除该 effect
+	for (const subs of effect.deps) {
+		subs.delete(effect);
+	}
+	// 将该 effect 依赖的所有 state 对应 subs 移除
+	effect.deps.clear();
+}
+```
+
 

@@ -175,7 +175,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -191,6 +192,7 @@
   "active": "55b1434162f858d6",
   "lastOpenFiles": [
     "第一篇：理念篇/第一章：前端框架原理概览/响应式系统.md",
+    "第一篇：理念篇/第一章：前端框架原理概览/README.md",
     "第一篇：理念篇/响应式系统.md"
   ]
 }
